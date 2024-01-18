@@ -7,23 +7,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/sajathfirthows/aws_codedeploy'
-            }
-        }
-
-        stage('Build and Package') {
-            steps {
-                // Gradle will be available in the PATH with GRADLE_HOME set
-                sh 'gradle clean build'
-
-                // ... rest of the script
-            }
-        }
-
-        // ... other stages
-
+        // ... your stages
     }
 
     post {
