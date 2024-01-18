@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         // Specify the Gradle installation configured in Jenkins
-        gradle 'YourGradleInstallation'
+        gradle 'Gradle'
     }
 
     stages {
