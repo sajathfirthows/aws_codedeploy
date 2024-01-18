@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     // Upload the application artifact to S3
-                    sh 'aws s3 cp your-app.jar s3://my-app-saja-cd/'
+                    sh 'aws s3 cp saja-new-app.jar s3://my-app-saja-cd/'
                 }
             }
         }
