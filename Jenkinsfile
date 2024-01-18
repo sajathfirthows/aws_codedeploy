@@ -14,8 +14,9 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Your build steps here (e.g., Maven build for Java)
-                    sh 'mvn clean install'
+            // Use the Maven tool configured in Jenkins
+            def mavenHome = tool 'Maven'
+            sh "${mavenHome}/bin/mvn clean install"
                 }
             }
         }
