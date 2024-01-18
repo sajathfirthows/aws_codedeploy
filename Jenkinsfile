@@ -11,29 +11,29 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build and Package') {
             steps {
                 script {
-                    // Your build steps here (e.g., Maven build for Java)
-                    def mavenHome = tool 'Maven'
-                    sh "${mavenHome}/bin/mvn clean install"
+                    // Change to the directory where the Maven project is located
+                    dir('path/to/your/maven/project') {
+                        // Use the Maven tool configured in Jenkins
+                        def mavenHome = tool 'Maven'
+                        sh "${mavenHome}/bin/mvn clean install"
+                        
+                        // Package your application (create a jar or war file)
+                        sh 'cp target/saja-new-app.jar .'
+                    }
                 }
             }
         }
 
-        stage('Deploy to AWS CodeDeploy') {
-            steps {
-                script {
-                    // Trigger AWS CodeDeploy deployment
-                    sh 'aws deploy create-deployment --application-name saja-new-app --deployment-group-name saja-new-app-dg --s3-location bucket=my-app-saja-cd,key=saja-new-app.jar,bundleType=zip'
-                }
-            }
-        }
+        // ... other stages
+
     }
 
     post {
         always {
-            // Cleanup or post-deployment steps
+            echo "Post-deployment steps or cleanup can go here"
         }
     }
 }
