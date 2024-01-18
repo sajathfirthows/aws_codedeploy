@@ -11,19 +11,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build and Package') {
             steps {
                 script {
-            // Use the Maven tool configured in Jenkins
-            def mavenHome = tool 'Maven'
-            sh "${mavenHome}/bin/mvn clean install"
-                }
-            }
-        }
-
-        stage('Package') {
-            steps {
-                script {
+                    // Use the Maven tool configured in Jenkins
+                    def mavenHome = tool 'Maven'
+                    sh "${mavenHome}/bin/mvn clean install"
+                    
                     // Package your application (create a jar or war file)
                     sh 'cp target/saja-new-app.jar .'
                 }
@@ -50,9 +44,8 @@ pipeline {
     }
 
     post {
-    always {
-        echo "Post-deployment steps or cleanup can go here"
+        always {
+            echo "Post-deployment steps or cleanup can go here"
+        }
     }
-}
-
 }
