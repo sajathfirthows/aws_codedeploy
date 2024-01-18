@@ -21,7 +21,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Ensure Git is properly configured in the workspace
+                    // Use the configured Git tool without explicit credentials
                     checkout([$class: 'GitSCM', branches: [[name: env.BRANCH_NAME]], userRemoteConfigs: [[url: env.REPO_URL]]])
                 }
             }
@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     // Assuming you have Gradle configured in Jenkins as a tool
-                    withEnv(['PATH+GRADLE=${tool 'GRADLE_TOOL_NAME'}/bin']) {
+                    withEnv(['PATH+GRADLE=' + tool('GRADLE_TOOL_NAME') + '/bin']) {
                         sh './gradlew build'
                     }
                 }
@@ -41,7 +41,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    withEnv(['PATH+GRADLE=${tool 'GRADLE_TOOL_NAME'}/bin']) {
+                    withEnv(['PATH+GRADLE=' + tool('GRADLE_TOOL_NAME') + '/bin']) {
                         sh './gradlew test'
                     }
                 }
@@ -60,23 +60,15 @@ pipeline {
     post {
         always {
             script {
-                // Assuming you have the necessary plugins for GitHub integration
-                // Update this section based on your actual requirements
-                script {
-                    // Assuming you have the necessary plugins for GitHub integration
-                    // Update this section based on your actual requirements
-                    script {
-                        try {
-                            // If you have the GitHub plugin installed, update the status
-                            githubStatus context: 'continuous-integration/jenkins', state: 'success'
-                            if (env.CHANGE_ID) {
-                                githubComment message: "The pipeline completed successfully!"
-                                githubLabel labels: ['approved']
-                            }
-                        } catch (Exception e) {
-                            echo "Failed to update GitHub status: ${e.message}"
-                        }
+                try {
+                    // If you have the GitHub plugin installed, update the status
+                    githubStatus context: 'continuous-integration/jenkins', state: 'success'
+                    if (env.CHANGE_ID) {
+                        githubComment message: "The pipeline completed successfully!"
+                        githubLabel labels: ['approved']
                     }
+                } catch (Exception e) {
+                    echo "Failed to update GitHub status: ${e.message}"
                 }
             }
         }
