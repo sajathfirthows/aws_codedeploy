@@ -49,8 +49,9 @@ pipeline {
     }
 
     post {
-        always {
-            // Cleanup or post-deployment steps
-        }
+    always {
+        echo "Post-deployment steps or cleanup can go here"
     }
+}
+
 }
