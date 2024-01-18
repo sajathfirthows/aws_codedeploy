@@ -1,37 +1,57 @@
 pipeline {
     agent any
 
+    tools {
+        // Configure Git tool
+        git 'GIT_TOOL_NAME'
+        // Configure Gradle tool (if applicable)
+        gradle 'GRADLE_TOOL_NAME'
+    }
+
+    options {
+        skipDefaultCheckout true
+    }
+
     environment {
-        APPLICATION_NAME = 'saja-new-app'
-        DEPLOYMENT_GROUP_NAME = 'saja-new-dg'
-        GITHUB_REPO = 'https://github.com/sajathfirthows/aws_codedeploy'
-        GITHUB_COMMIT = 'master'  // Replace with the specific branch or commit ID
-        GRADLE_HOME = tool 'Gradle' // Assuming you have Gradle configured in Jenkins as a tool
+        REPO_URL = 'https://github.com/sajathfirthows/aws_codedeploy.git'
+        BRANCH_NAME = 'main'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/sajathfirthows/aws_codedeploy']]])
+                    // Ensure Git is properly configured in the workspace
+                    checkout([$class: 'GitSCM', branches: [[name: env.BRANCH_NAME]], userRemoteConfigs: [[url: env.REPO_URL]]])
                 }
             }
         }
 
-        stage('Build with Gradle') {
+        stage('Build') {
             steps {
                 script {
-                    withEnv(['PATH+GRADLE=${env.GRADLE_HOME}/bin']) {
+                    // Assuming you have Gradle configured in Jenkins as a tool
+                    withEnv(['PATH+GRADLE=${tool 'GRADLE_TOOL_NAME'}/bin']) {
                         sh './gradlew build'
                     }
                 }
             }
         }
 
-        stage('Deploy to CodeDeploy') {
+        stage('Test') {
             steps {
                 script {
-                    sh "aws deploy create-deployment --application-name $APPLICATION_NAME --deployment-group-name $DEPLOYMENT_GROUP_NAME --github-location repository=$GITHUB_REPO,commitId=$GITHUB_COMMIT"
+                    withEnv(['PATH+GRADLE=${tool 'GRADLE_TOOL_NAME'}/bin']) {
+                        sh './gradlew test'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh './deploy.sh'
                 }
             }
         }
@@ -42,10 +62,21 @@ pipeline {
             script {
                 // Assuming you have the necessary plugins for GitHub integration
                 // Update this section based on your actual requirements
-                githubStatus context: 'continuous-integration/jenkins', state: 'success'
-                if (env.CHANGE_ID) {
-                    githubComment message: "The pipeline completed successfully!"
-                    githubLabel labels: ['approved']
+                script {
+                    // Assuming you have the necessary plugins for GitHub integration
+                    // Update this section based on your actual requirements
+                    script {
+                        try {
+                            // If you have the GitHub plugin installed, update the status
+                            githubStatus context: 'continuous-integration/jenkins', state: 'success'
+                            if (env.CHANGE_ID) {
+                                githubComment message: "The pipeline completed successfully!"
+                                githubLabel labels: ['approved']
+                            }
+                        } catch (Exception e) {
+                            echo "Failed to update GitHub status: ${e.message}"
+                        }
+                    }
                 }
             }
         }
