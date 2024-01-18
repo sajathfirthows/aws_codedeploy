@@ -1,28 +1,12 @@
 pipeline {
     agent any
 
-    tools {
-        // Configure Git tool
-        git 'GIT_TOOL_NAME'
-        // Configure Gradle tool (if applicable)
-        gradle 'GRADLE_TOOL_NAME'
-    }
-
-    options {
-        skipDefaultCheckout true
-    }
-
-    environment {
-        REPO_URL = 'https://github.com/sajathfirthows/aws_codedeploy.git'
-        BRANCH_NAME = 'main'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 script {
-                    // Use the configured Git tool without explicit credentials
-                    checkout([$class: 'GitSCM', branches: [[name: env.BRANCH_NAME]], userRemoteConfigs: [[url: env.REPO_URL]]])
+                    // Checkout source code from GitHub
+                    git 'https://github.com/sajathfirthows/aws_codedeploy'
                 }
             }
         }
@@ -30,28 +14,35 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Assuming you have Gradle configured in Jenkins as a tool
-                    withEnv(['PATH+GRADLE=' + tool('GRADLE_TOOL_NAME') + '/bin']) {
-                        sh './gradlew build'
-                    }
+                    // Your build steps here (e.g., Maven build for Java)
+                    sh 'mvn clean install'
                 }
             }
         }
 
-        stage('Test') {
+        stage('Package') {
             steps {
                 script {
-                    withEnv(['PATH+GRADLE=' + tool('GRADLE_TOOL_NAME') + '/bin']) {
-                        sh './gradlew test'
-                    }
+                    // Package your application (create a jar or war file)
+                    sh 'cp target/saja-new-app.jar .'
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Upload to S3') {
             steps {
                 script {
-                    sh './deploy.sh'
+                    // Upload the application artifact to S3
+                    sh 'aws s3 cp your-app.jar s3://my-app-saja-cd/'
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                script {
+                    // Trigger CodeDeploy deployment
+                    sh 'aws deploy create-deployment --application-name saja-new-app --deployment-group-name saja-new-app-dg --s3-location bucket=my-app-saja-cd,key=saja-new-app.jar,bundleType=zip'
                 }
             }
         }
@@ -59,18 +50,7 @@ pipeline {
 
     post {
         always {
-            script {
-                try {
-                    // If you have the GitHub plugin installed, update the status
-                    githubStatus context: 'continuous-integration/jenkins', state: 'success'
-                    if (env.CHANGE_ID) {
-                        githubComment message: "The pipeline completed successfully!"
-                        githubLabel labels: ['approved']
-                    }
-                } catch (Exception e) {
-                    echo "Failed to update GitHub status: ${e.message}"
-                }
-            }
+            // Cleanup or post-deployment steps
         }
     }
 }
