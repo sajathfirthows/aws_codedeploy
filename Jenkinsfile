@@ -12,16 +12,19 @@ pipeline {
         }
 
         stage('Build and Package') {
-            steps {
-                script {
-                    // Change to the directory where the Maven project is located
-                    dir('path/to/your/maven/project') {
-                        // Use the Maven tool configured in Jenkins
-                        def mavenHome = tool 'Maven'
-                        sh "${mavenHome}/bin/mvn clean install"
-                        
-                        // Package your application (create a jar or war file)
-                        sh 'cp target/saja-new-app.jar .'
+    steps {
+        script {
+            // Use the Maven tool configured in Jenkins
+            def mavenHome = tool 'Maven'
+
+            // Specify the relative path to your Maven project
+            def mavenProjectDir = 'path/to/your/maven/project'
+
+            // Execute Maven in the specified directory
+            sh "cd ${mavenProjectDir} && ${mavenHome}/bin/mvn clean install"
+
+            // Package your application (create a jar or war file)
+            sh 'cp target/saja-new-app.jar .'
                     }
                 }
             }
