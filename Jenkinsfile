@@ -15,13 +15,10 @@ pipeline {
             steps {
                 script {
                     // Use the Gradle tool configured in Jenkins
-                    def gradleHome = tool 'Gradle'
-                    
-                    // Specify the relative path to your Gradle project (update as needed)
-                    def gradleProjectDir = 'path/to/your/gradle/project'
+                    gradleHome = tool 'Gradle'
 
-                    // Execute Gradle in the specified directory
-                    sh "cd ${gradleProjectDir} && ${gradleHome}/bin/gradle clean build"
+                    // Execute Gradle in the workspace
+                    sh "${gradleHome}/bin/gradle clean build"
 
                     // Upload the artifact to S3
                     sh 'aws s3 cp build/libs/saja-new-app.jar s3://my-app-saja-cd/'
