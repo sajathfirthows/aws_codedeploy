@@ -14,15 +14,20 @@ pipeline {
         stage('Build and Package') {
             steps {
                 script {
-                    // Change to the directory where the Maven project is located
-                    dir('path/to/your/maven/project') {
-                        // Use the Maven tool configured in Jenkins
-                        def mavenHome = tool 'Maven'
-                        sh "${mavenHome}/bin/mvn clean install"
-                        
-                        // Package your application (create a jar or war file)
-                        sh 'cp target/saja-new-app.jar .'
-                    }
+                    // Use the Gradle tool configured in Jenkins
+                    def gradleHome = tool 'Gradle'
+                    
+                    // Specify the relative path to your Gradle project
+                    def gradleProjectDir = '/usr/bin/gradle'
+
+                    // Execute Gradle in the specified directory
+                    sh "cd ${gradleProjectDir} && ${gradleHome}/bin/gradle clean build"
+
+                    // Upload the artifact to S3
+                    sh 'aws s3 cp build/libs/saja-new-app.jar s3://my-app-saja-cd/'
+
+                    // Optionally, you can copy the artifact to the workspace for later stages
+                    sh 'cp build/libs/saja-new-app.jar .'
                 }
             }
         }
